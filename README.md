@@ -1,5 +1,10 @@
 # swift-mermaid
 
+[![Swift 5.10+](https://img.shields.io/badge/Swift-5.10+-orange.svg)](https://swift.org)
+[![Platforms](https://img.shields.io/badge/Platforms-macOS%2014-blue.svg)](https://developer.apple.com)
+[![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)](https://swift.org/package-manager)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A pure-Swift [Mermaid](https://mermaid.js.org) diagram renderer for Apple platforms - no
 JavaScript engine, no `WKWebView`, no network access. Built to be embedded in sandboxed apps that
 need to render Markdown previews containing ```` ```mermaid ```` fenced blocks without dragging
