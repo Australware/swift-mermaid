@@ -84,9 +84,32 @@ enum FlowchartRenderer {
             out.append(.path(trapezoidPath(in: r, inverted: true), style: style))
         case .asymmetric:
             out.append(.path(asymmetricPath(in: r), style: style))
+        case .stateStart:
+            out.append(.path(ellipsePath(in: r),
+                             style: ShapeStyle_(fill: palette.edgeStroke, stroke: palette.edgeStroke,
+                                                strokeWidth: 1)))
+        case .stateEnd:
+            out.append(.path(ellipsePath(in: r),
+                             style: ShapeStyle_(fill: palette.background, stroke: palette.edgeStroke,
+                                                strokeWidth: 1.5)))
+            out.append(.path(ellipsePath(in: r.insetBy(dx: 4, dy: 4)),
+                             style: ShapeStyle_(fill: palette.edgeStroke, stroke: nil, strokeWidth: 0)))
+        case .stateChoice:
+            out.append(.path(rhombusPath(in: r), style: style))
+        case .stateForkJoin:
+            out.append(.rect(r, cornerRadius: min(r.width, r.height) / 2,
+                             style: ShapeStyle_(fill: palette.edgeStroke, stroke: palette.edgeStroke,
+                                                strokeWidth: 1)))
+        case .note:
+            out.append(.rect(r, cornerRadius: 3,
+                             style: ShapeStyle_(fill: palette.noteFill, stroke: palette.noteBorder,
+                                                strokeWidth: 1)))
         }
-        // Centred label, multi-line.
-        out.append(contentsOf: drawLabel(node.label, in: r, font: FlowchartLayout.nodeFont, color: palette.nodeTextColor))
+        // Centred label, multi-line. Marker shapes (start/end/fork/…) have empty labels.
+        if !node.label.isEmpty {
+            let textColor = node.shape == .note ? palette.noteTextColor : palette.nodeTextColor
+            out.append(contentsOf: drawLabel(node.label, in: r, font: FlowchartLayout.nodeFont, color: textColor))
+        }
         return out
     }
 
@@ -107,6 +130,7 @@ enum FlowchartRenderer {
     // MARK: - Edges
 
     private static func renderEdge(_ edge: EdgeRoute, palette: ThemePalette) -> [MermaidElement] {
+        if edge.kind == .invisible { return [] }
         let strokeWidth: CGFloat = (edge.kind == .thick) ? 3 : 1.5
         let dash: [CGFloat]? = (edge.kind == .dotted) ? [4, 3] : nil
         let style = ShapeStyle_(fill: nil, stroke: palette.edgeStroke,

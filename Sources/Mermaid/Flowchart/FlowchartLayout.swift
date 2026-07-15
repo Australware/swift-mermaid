@@ -149,6 +149,9 @@ enum FlowchartLayout {
             let labelSize = block.size
             var w = labelSize.width + nodePaddingH * 2
             var h = labelSize.height + nodePaddingV * 2
+            // Shapes with a fixed size independent of their (empty) label skip the minimum-size
+            // clamp below.
+            var fixedSize: CGSize? = nil
             // Shape-specific size adjustments.
             switch node.shape {
             case .circle, .doubleCircle:
@@ -167,11 +170,24 @@ enum FlowchartLayout {
                 h += 24
             case .subroutine, .asymmetric:
                 w += 12
-            case .rect, .roundRect:
+            case .stateStart, .stateEnd:
+                fixedSize = CGSize(width: 14, height: 14)
+            case .stateChoice:
+                fixedSize = CGSize(width: 32, height: 32)
+            case .stateForkJoin:
+                // The bar runs perpendicular to the flow direction.
+                let horizontalFlow = (ast.direction == .LR || ast.direction == .RL)
+                fixedSize = horizontalFlow ? CGSize(width: 8, height: 70)
+                                           : CGSize(width: 70, height: 8)
+            case .rect, .roundRect, .note:
                 break
             }
-            // Minimum size so single-character labels don't look pinched.
-            w = max(w, 60); h = max(h, 36)
+            if let fixed = fixedSize {
+                w = fixed.width; h = fixed.height
+            } else {
+                // Minimum size so single-character labels don't look pinched.
+                w = max(w, 60); h = max(h, 36)
+            }
             let rect = CGRect(origin: .zero, size: CGSize(width: w.rounded(), height: h.rounded()))
             out.append(PositionedNode(id: id, rect: rect, label: node.label, shape: node.shape,
                                       subgraphID: node.subgraphID))
@@ -468,7 +484,7 @@ enum FlowchartLayout {
         return out
     }
 
-    private static func midpoint(of pts: [CGPoint]) -> CGPoint {
+    static func midpoint(of pts: [CGPoint]) -> CGPoint {
         guard pts.count >= 2 else { return pts.first ?? .zero }
         // Walk along the polyline to half its total length.
         var lengths: [CGFloat] = []
