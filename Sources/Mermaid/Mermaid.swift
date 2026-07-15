@@ -32,11 +32,18 @@ public enum Mermaid {
 
         switch pre.type {
         case .flowchart, .state:
-            // State diagrams reuse the flowchart pipeline (a later milestone will swap in a
-            // state-aware parser; today, treat them as unsupported so the host falls back cleanly).
-            if pre.type == .state { throw MermaidError.unsupportedDiagramType("stateDiagram") }
-            let ast = try FlowchartParser.parse(pre.body)
-            let positioned: PositionedFlowchart
+            // State diagrams reuse the flowchart pipeline: `StateParser` lowers the state syntax
+            // into a `FlowchartAST`, then layout + rendering are shared.
+            let ast: FlowchartAST
+            var stateDiagram: StateDiagram? = nil
+            if pre.type == .state {
+                let sd = try StateParser.parse(pre.body)
+                stateDiagram = sd
+                ast = sd.ast
+            } else {
+                ast = try FlowchartParser.parse(pre.body)
+            }
+            var positioned: PositionedFlowchart
             switch layout {
             case .builtin:
                 positioned = FlowchartLayout.layout(ast)
@@ -48,6 +55,9 @@ public enum Mermaid {
                     // layout rather than failing the whole render.
                     positioned = FlowchartLayout.layout(ast)
                 }
+            }
+            if let sd = stateDiagram {
+                positioned = StatePostLayout.clipCompositeEdges(positioned, diagram: sd)
             }
             return FlowchartRenderer.render(positioned, theme: effective)
 

@@ -139,6 +139,44 @@ final class VisualSmokeTests: XCTestCase {
         """, theme: .dark)
     }
 
+    func testStateDiagram() throws {
+        let src = """
+        stateDiagram-v2
+            [*] --> Still
+            Still --> [*]
+            Still --> Moving
+            Moving --> Still
+            Moving --> Crash : impact
+            Crash --> [*]
+            state Moving {
+                [*] --> Slow
+                Slow --> Fast : accelerate
+                Fast --> Slow : brake
+            }
+            note right of Crash : ouch
+        """
+        try dump("state-basic-light", source: src, theme: .default)
+        try dump("state-basic-dark", source: src, theme: .dark)
+
+        try dump("state-choice-fork", source: """
+        stateDiagram-v2
+            direction LR
+            state if_state <<choice>>
+            state fork_state <<fork>>
+            state join_state <<join>>
+            [*] --> if_state
+            if_state --> Retry : error
+            if_state --> fork_state : ok
+            fork_state --> WriteLog
+            fork_state --> UpdateUI
+            WriteLog --> join_state
+            UpdateUI --> join_state
+            join_state --> [*]
+            Retry --> if_state
+        """)
+        print("Visual output: \(Self.outputDir.path)")
+    }
+
     func testPie() throws {
         try dump("pie-basic", source: """
         pie title NETFLIX

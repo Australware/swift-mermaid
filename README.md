@@ -22,7 +22,7 @@ type-specific layout → renderer → `MermaidScene` (geometry + style IR) → S
 | `pie`                   | ✅ v1          |
 | `architecture-beta`     | ✅ v1 (built-in icons only — no custom iconify packs) |
 | `classDiagram(-v2)`     | ✅ v1 (notes & namespaces parsed-and-skipped) |
-| `stateDiagram(-v2)`     | ⏳ planned     |
+| `stateDiagram(-v2)`     | ✅ v1 (concurrency `--` regions lay out together, without a divider) |
 | `ER`                    | ⏳ planned     |
 | `gantt`                 | ⏳ planned     |
 | `journey`               | ⏳ planned     |

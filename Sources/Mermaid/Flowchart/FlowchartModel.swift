@@ -22,6 +22,14 @@ enum FlowNodeShape: String {
     case trapezoid          // [/text\]
     case trapezoidInv       // [\text/]
     case asymmetric         // >text]
+
+    // State-diagram shapes. stateDiagram-v2 reuses the flowchart pipeline (see `StateParser`), so
+    // its extra node kinds live in the shared shape enum.
+    case stateStart         // [*] as a transition source — small filled disc
+    case stateEnd           // [*] as a transition target — ringed disc
+    case stateChoice        // <<choice>> — small empty diamond
+    case stateForkJoin      // <<fork>> / <<join>> — thick bar perpendicular to the flow
+    case note               // `note left of` / `note right of` box
 }
 
 struct FlowNode {
@@ -35,6 +43,9 @@ enum FlowEdgeKind {
     case solid
     case dotted
     case thick
+    /// Participates in layout but is never drawn — used to place state-diagram notes next to
+    /// their target state.
+    case invisible
 }
 
 enum FlowArrow {

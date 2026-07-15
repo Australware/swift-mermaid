@@ -432,7 +432,8 @@ enum FlowchartParser {
         switch kind {
         case .dotted:
             length = max(1, totalDots)
-        case .solid, .thick:
+        case .solid, .thick, .invisible:
+            // `.invisible` never comes from flowchart source; listed only for exhaustiveness.
             if endsWithTerminator {
                 length = max(1, totalDashes - 1)
             } else {
