@@ -4,7 +4,8 @@ import PackageDescription
 let package = Package(
     name: "swift-mermaid",
     platforms: [
-        .macOS(.v14)
+        .macOS(.v14),
+        .iOS(.v16)
     ],
     products: [
         // Only the umbrella `Mermaid` library is exposed. `MermaidLayoutDagre` is a vendored copy
