@@ -17,17 +17,17 @@ type-specific layout → renderer → `MermaidScene` (geometry + style IR) → S
 
 | Diagram type            | Status         |
 | ----------------------- | -------------- |
-| `flowchart` / `graph`   | ✅ v1          |
-| `sequenceDiagram`       | ✅ v1          |
-| `pie`                   | ✅ v1          |
-| `architecture-beta`     | ✅ v1 (built-in icons only — no custom iconify packs) |
-| `classDiagram(-v2)`     | ✅ v1 (notes & namespaces parsed-and-skipped) |
-| `stateDiagram(-v2)`     | ✅ v1 (concurrency `--` regions lay out together, without a divider) |
-| `ER`                    | ⏳ planned     |
+| `flowchart` / `graph`   | ✅             |
+| `sequenceDiagram`       | ✅             |
+| `pie`                   | ✅             |
+| `architecture-beta`     | ✅  (built-in icons only — no custom iconify packs) |
+| `classDiagram(-v2)`     | ✅  (notes & namespaces parsed-and-skipped) |
+| `stateDiagram(-v2)`     | ✅  (concurrency `--` regions lay out together, without a divider) |
+| `erDiagram`             | ✅  (symbolic cardinality tokens only — no `one or more` word aliases) |
+| `gitGraph`              | ✅  (`LR`/`TB`/`BT`; un-named commits draw as bare dots — see below) |
+| `journey`               | ✅             |
 | `gantt`                 | ⏳ planned     |
-| `journey`               | ⏳ planned     |
 | `quadrantchart`         | ⏳ planned     |
-| `gitgraph`              | ⏳ planned     |
 | `mindmap`               | ⏳ planned     |
 | `timeline`              | ⏳ planned     |
 | `zenuml`                | ⏳ planned     |
@@ -44,6 +44,8 @@ type-specific layout → renderer → `MermaidScene` (geometry + style IR) → S
 Unsupported diagram types throw `.unsupportedDiagramType` cleanly.
 
 Determinism is a hard requirement: same `(source, theme, OS)` → byte-identical SVG output.
+
+Release history: [CHANGELOG.md](CHANGELOG.md).
 
 ## Installation
 
@@ -117,12 +119,15 @@ Sources/Mermaid/
   Sequence/          # Parser, bespoke deterministic layout, renderer.
   Pie/               # Parser, renderer.
   Class/             # Parser, dagre-backed layout (shares the vendored backend), renderer.
+  ER/                # Parser, dagre-backed layout (shares the vendored backend), renderer.
+  GitGraph/          # Parser, lane-per-branch layout, renderer.
+  Journey/           # Parser, renderer (layout falls out of a single left-to-right walk).
   Architecture/      # Parser, grid-constraint layout, renderer (built-in icon glyphs).
   Mermaid.swift      # Umbrella entry point.
 Vendor/MermaidLayoutDagre/
                      # Vendored copy of lukilabs/dagre-swift @ 92efb78 (MIT). Network-simplex
                      # ranking, Brandes–Köpf x-coords, real compound-graph (subgraph) layout.
-                     # Drives the flowchart and class-diagram layouts. Internal target — not
+                     # Drives the flowchart, class and ER layouts. Internal target — not
                      # exported as a product, so consumers can't couple to it. See
                      # Vendor/MermaidLayoutDagre/VENDORED.md and THIRD-PARTY-NOTICES.md.
 ```
@@ -147,6 +152,13 @@ Visual output: /var/folders/.../swift-mermaid-visual/
 
 ## Known limitations
 
+- `gitGraph` commits written without an explicit `id:` are drawn as bare dots. Mermaid labels them
+  with a random hash, which would break the byte-identical-output guarantee; write `commit id: "…"`
+  when you want a label. `mainBranchName` (a `%%{init}%%` config) is likewise not honoured, because
+  init directives are stripped before parsing.
+- `erDiagram` cardinality must use the symbolic tokens (`||--o{`, `}|..|{`, …); the `one or more`
+  word aliases are not recognised. Crow's-foot markers are drawn in textbook notation rather than
+  reproducing Mermaid's own marker paths.
 - Node labels are plain text. `**bold**` / `*italic*` / `<br/>` inside labels are not yet honoured
   (multi-line via `\n` works).
 - The hand-rolled fallback (`.builtin`) layout is intentionally simple: the long-edge bend-point

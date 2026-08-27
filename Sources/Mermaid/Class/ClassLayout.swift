@@ -76,6 +76,16 @@ enum ClassLayout {
     static let outerMargin: CGFloat = 16
     static let labelFont = FontSpec(family: FontSpec.defaultFamily, size: 12)
     static let cardinalityFont = FontSpec(family: FontSpec.defaultFamily, size: 12)
+    static let labelPad: CGFloat = 4
+
+    /// The background box a relationship label occupies. Shared with the renderer so the canvas
+    /// bounds and the drawn box can't drift apart — a self-loop's label sits outside its polyline,
+    /// so the points alone don't bound it.
+    static func labelRect(_ text: String, at point: CGPoint) -> CGRect {
+        let size = TextMeasure.layout(text, font: labelFont).size
+        return CGRect(center: point,
+                      size: CGSize(width: size.width + labelPad * 2, height: size.height + labelPad))
+    }
 
     static func layout(_ ast: ClassDiagramAST) -> PositionedClassDiagram {
         let metrics: [String: ClassBoxMetrics] = Dictionary(
@@ -207,7 +217,10 @@ enum ClassLayout {
         var minX = CGFloat.infinity, minY = CGFloat.infinity, maxX = -CGFloat.infinity, maxY = -CGFloat.infinity
         func extend(_ r: CGRect) { minX = min(minX, r.minX); minY = min(minY, r.minY); maxX = max(maxX, r.maxX); maxY = max(maxY, r.maxY) }
         for b in boxes { extend(b.rect) }
-        for rel in relations { for p in rel.points { extend(CGRect(x: p.x, y: p.y, width: 0, height: 0)) } }
+        for rel in relations {
+            for p in rel.points { extend(CGRect(x: p.x, y: p.y, width: 0, height: 0)) }
+            if let text = rel.label, !text.isEmpty, let pt = rel.labelPoint { extend(labelRect(text, at: pt)) }
+        }
         if !minX.isFinite { return PositionedClassDiagram(size: CGSize(width: 48, height: 48), boxes: boxes, relations: relations) }
 
         let dx = outerMargin - minX, dy = outerMargin - minY

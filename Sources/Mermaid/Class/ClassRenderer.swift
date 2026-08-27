@@ -95,7 +95,7 @@ enum ClassRenderer {
 
         // `: label`.
         if let label = rel.label, !label.isEmpty, let pt = rel.labelPoint {
-            out.append(contentsOf: labelBox(label, at: pt, font: ClassLayout.labelFont, palette: palette))
+            out.append(contentsOf: labelBox(label, at: pt, palette: palette))
         }
 
         // Cardinality strings, nudged just inside each endpoint.
@@ -187,12 +187,10 @@ enum ClassRenderer {
                       font: ClassLayout.cardinalityFont, color: palette.edgeLabelColor, anchor: .middle)]
     }
 
-    private static func labelBox(_ text: String, at pt: CGPoint, font: FontSpec,
-                                 palette: ThemePalette) -> [MermaidElement] {
+    private static func labelBox(_ text: String, at pt: CGPoint, palette: ThemePalette) -> [MermaidElement] {
+        let font = ClassLayout.labelFont
         let block = TextMeasure.layout(text, font: font)
-        let pad: CGFloat = 4
-        let bg = CGRect(x: pt.x - block.size.width / 2 - pad, y: pt.y - block.size.height / 2 - pad / 2,
-                        width: block.size.width + pad * 2, height: block.size.height + pad)
+        let bg = ClassLayout.labelRect(text, at: pt)
         var out: [MermaidElement] = [.rect(bg, cornerRadius: 3,
                                            style: ShapeStyle_(fill: palette.edgeLabelBackground, stroke: nil, strokeWidth: 0))]
         let firstBaselineY = pt.y - block.size.height / 2 + block.firstBaseline

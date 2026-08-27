@@ -41,6 +41,20 @@ public struct ThemePalette: Sendable {
     public var activationFill: CGColor
     public var activationBorder: CGColor
 
+    // ER diagram
+    public var erEntityFill: CGColor
+    public var erEntityBorder: CGColor
+    public var erAttributeFillOdd: CGColor
+    public var erAttributeFillEven: CGColor
+
+    // Git graph — one colour per branch lane, cycled.
+    public var gitBranchColors: [CGColor]
+
+    // User journey
+    public var journeySectionFills: [CGColor]
+    public var journeyFaceFill: CGColor
+    public var journeyFaceStroke: CGColor
+
     // Pie chart
     public var pieStroke: CGColor
     public var pieTitleColor: CGColor
@@ -69,6 +83,20 @@ func hex(_ value: UInt32, alpha: CGFloat = 1) -> CGColor {
 }
 
 extension CGColor {
+    /// Black or white, whichever reads better on top of this colour. Used for text drawn inside a
+    /// palette-coloured swatch, where the theme's own text colour may not have enough contrast.
+    var contrastingTextColor: CGColor {
+        guard let c = converted(to: CGColorSpace(name: CGColorSpace.sRGB)!, intent: .defaultIntent, options: nil),
+              let comps = c.components, comps.count >= 3 else {
+            return hex(0x000000)
+        }
+        func linearise(_ v: CGFloat) -> CGFloat {
+            v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4)
+        }
+        let luminance = 0.2126 * linearise(comps[0]) + 0.7152 * linearise(comps[1]) + 0.0722 * linearise(comps[2])
+        return luminance > 0.42 ? hex(0x000000) : hex(0xFFFFFF)
+    }
+
     /// `#rrggbb` (or `rgba(...)` when partially transparent) — suitable for an SVG presentation attribute.
     var svgString: String {
         guard let c = converted(to: CGColorSpace(name: CGColorSpace.sRGB)!, intent: .defaultIntent, options: nil),
@@ -116,6 +144,14 @@ extension ThemePalette {
             noteTextColor: hex(0x333333),
             activationFill: hex(0xF4F4F4),
             activationBorder: hex(0x666666),
+            erEntityFill: hex(0xECECFF),
+            erEntityBorder: hex(0x9370DB),
+            erAttributeFillOdd: hex(0xFFFFFF),
+            erAttributeFillEven: hex(0xF2F2F2),
+            gitBranchColors: ThemePalette.lightGitBranchColors,
+            journeySectionFills: ThemePalette.lightJourneySectionFills,
+            journeyFaceFill: hex(0xFFF4DD),
+            journeyFaceStroke: hex(0x999999),
             pieStroke: hex(0x000000),
             pieTitleColor: hex(0x000000),
             pieSlices: ThemePalette.lightPieSlices
@@ -148,6 +184,14 @@ extension ThemePalette {
             noteTextColor: hex(0x000000),
             activationFill: hex(0x2B2B2B),
             activationBorder: hex(0x81B1DB),
+            erEntityFill: hex(0x1F2020),
+            erEntityBorder: hex(0x81B1DB),
+            erAttributeFillOdd: hex(0x272727),
+            erAttributeFillEven: hex(0x2E2E2E),
+            gitBranchColors: ThemePalette.darkGitBranchColors,
+            journeySectionFills: ThemePalette.darkJourneySectionFills,
+            journeyFaceFill: hex(0xE6D2A9),
+            journeyFaceStroke: hex(0x8A8A8A),
             pieStroke: hex(0x000000),
             pieTitleColor: hex(0xCCCCCC),
             pieSlices: ThemePalette.darkPieSlices
@@ -167,5 +211,27 @@ extension ThemePalette {
         hex(0x4a4a8a), hex(0x8a8a4a), hex(0x4a7a8a), hex(0x8a4a4a),
         hex(0x4a8a5a), hex(0x8a6a4a), hex(0x6a4a8a), hex(0x4a6a8a),
         hex(0x8a7a4a), hex(0x5a8a5a), hex(0x8a5a4a), hex(0x5a5a8a)
+    ]
+}
+
+// Mermaid derives `git0…git7` and `fillType0…fillType7` from the theme's primary colour at runtime.
+// We use fixed sets in the same spirit: eight readable, mutually distinguishable hues per theme.
+extension ThemePalette {
+    static let lightGitBranchColors: [CGColor] = [
+        hex(0x7E57C2), hex(0x26A69A), hex(0xEF6C00), hex(0x42A5F5),
+        hex(0xEC407A), hex(0x7CB342), hex(0x8D6E63), hex(0xFFA726)
+    ]
+    static let darkGitBranchColors: [CGColor] = [
+        hex(0xB39DDB), hex(0x4DB6AC), hex(0xFFB74D), hex(0x64B5F6),
+        hex(0xF06292), hex(0xAED581), hex(0xBCAAA4), hex(0xFFCC80)
+    ]
+
+    static let lightJourneySectionFills: [CGColor] = [
+        hex(0xECECFF), hex(0xffffde), hex(0xb3e6ff), hex(0xffd9d9),
+        hex(0xd9f2d9), hex(0xffe6cc), hex(0xe6ccff), hex(0xcce6ff)
+    ]
+    static let darkJourneySectionFills: [CGColor] = [
+        hex(0x4a4a8a), hex(0x8a8a4a), hex(0x4a7a8a), hex(0x8a4a4a),
+        hex(0x4a8a5a), hex(0x8a6a4a), hex(0x6a4a8a), hex(0x4a6a8a)
     ]
 }

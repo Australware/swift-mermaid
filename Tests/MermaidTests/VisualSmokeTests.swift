@@ -234,4 +234,100 @@ final class VisualSmokeTests: XCTestCase {
             server2:R --> L:db
         """, theme: .dark, layout: .builtin)
     }
+
+    func testClassSelfRelationship() throws {
+        try dumpOne("class-self-loop", source: """
+        classDiagram
+            class Node {
+                +String value
+                +next() Node
+            }
+            Node --> Node : next
+            Node "1" --> "0..*" Leaf : children
+        """, theme: .default, layout: .builtin)
+    }
+
+    func testER() throws {
+        try dumpOne("er-basic", source: """
+        erDiagram
+            CUSTOMER ||--o{ ORDER : places
+            CUSTOMER }|..|{ DELIVERY-ADDRESS : uses
+            ORDER ||--|{ LINE-ITEM : contains
+            CUSTOMER {
+                string name
+                string custNumber PK
+                string sector
+            }
+            ORDER {
+                int orderNumber PK
+                string deliveryAddress FK "where it goes"
+            }
+            LINE-ITEM {
+                string productCode
+                int quantity
+            }
+        """, theme: .default, layout: .builtin)
+
+        try dumpOne("er-cardinalities-dark", source: """
+        erDiagram
+            A |o--o| B : "zero or one"
+            C ||--|| D : "exactly one"
+            E }o--o{ F : "zero or more"
+            G }|--|{ H : "one or more"
+            EMPLOYEE ||--o{ EMPLOYEE : manages
+        """, theme: .dark, layout: .builtin)
+    }
+
+    func testGitGraph() throws {
+        try dumpOne("gitgraph-full", source: """
+        gitGraph
+            commit id: "init"
+            commit id: "second" tag: "v1.0.0"
+            branch develop
+            commit id: "dev-1"
+            commit id: "dev-2" type: HIGHLIGHT
+            checkout main
+            merge develop tag: "v1.1.0"
+            branch hotfix
+            commit id: "fix" type: REVERSE
+            checkout main
+            merge hotfix
+            cherry-pick id: "dev-1"
+            commit
+        """, theme: .default, layout: .builtin)
+
+        try dumpOne("gitgraph-tb-dark", source: """
+        gitGraph TB:
+            commit id: "one"
+            branch feature
+            commit id: "two" tag: "beta"
+            checkout main
+            commit id: "three"
+            merge feature
+        """, theme: .dark, layout: .builtin)
+    }
+
+    func testJourney() throws {
+        try dumpOne("journey-basic", source: """
+        journey
+            title My working day
+            section Go to work
+              Make tea: 5: Me
+              Go upstairs: 3: Me
+              Do work: 1: Me, Cat
+            section Go home
+              Go downstairs: 5: Me
+              Sit down: 5: Me, Cat, Dog
+        """, theme: .default, layout: .builtin)
+
+        try dumpOne("journey-dark", source: """
+        journey
+            title Checkout flow
+            section Browse
+              Find a really long product name that wraps: 4: Shopper
+            section Pay
+              Enter card: 2: Shopper, Bank
+              Confirm: 5: Shopper
+        """, theme: .dark, layout: .builtin)
+    }
 }

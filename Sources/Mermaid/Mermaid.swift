@@ -74,6 +74,20 @@ public enum Mermaid {
             let ast = try PieParser.parse(pre.body)
             return PieRenderer.render(ast, theme: effective)
 
+        case .er:
+            let ast = try ERParser.parse(pre.body)
+            let positioned = ERLayout.layout(ast)
+            return ERRenderer.render(positioned, theme: effective)
+
+        case .gitGraph:
+            let ast = try GitGraphParser.parse(pre.body)
+            let positioned = GitGraphLayout.layout(ast)
+            return GitGraphRenderer.render(positioned, theme: effective)
+
+        case .journey:
+            let ast = try JourneyParser.parse(pre.body)
+            return JourneyRenderer.render(ast, theme: effective)
+
         case .architecture:
             let ast = try ArchitectureParser.parse(pre.body)
             let positioned = ArchitectureLayout.layout(ast)

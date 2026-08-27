@@ -179,4 +179,14 @@ final class ClassDiagramTests: XCTestCase {
         let scene = try Mermaid.render("classDiagram")
         XCTAssertGreaterThan(scene.size.width, 0)
     }
+
+    func testSelfLoopLabelStaysInsideTheCanvas() throws {
+        let laid = ClassLayout.layout(try parse("classDiagram\nNode --> Node : next"))
+        let rel = try XCTUnwrap(laid.relations.first)
+        let box = ClassLayout.labelRect(try XCTUnwrap(rel.label), at: try XCTUnwrap(rel.labelPoint))
+        XCTAssertLessThanOrEqual(box.maxX, laid.size.width)
+        XCTAssertLessThanOrEqual(box.maxY, laid.size.height)
+        XCTAssertGreaterThanOrEqual(box.minX, 0)
+        XCTAssertGreaterThanOrEqual(box.minY, 0)
+    }
 }
